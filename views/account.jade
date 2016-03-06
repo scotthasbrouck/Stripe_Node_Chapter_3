@@ -2,7 +2,7 @@ extends index
 
 block append content
   h3 Account for #{email}
-  h2 #{message}
+  h2.error_message #{message}
   a(href='/logout') Logout
   h2 Available Products
   hr
@@ -15,7 +15,7 @@ block append content
         td
           if product.amount
             h3 #{'$' + (product.amount / 100).toFixed(2)}
-            form(action='/purchase', method='POST')
+            form(action='/purchase', method='POST', class='purchase_form')
               input(type='hidden', name='_id', value=product._id)
               div.input
                 span.label Credit Card Number:
@@ -28,7 +28,7 @@ block append content
               div.input
                 span.label CVC:
                 input(type='text', data-stripe='cvc', size='4')
-              input(type='submit', value='Purchase!')
+              input(type='submit', value='Purchase!', class='submit')
           else
             h3 Purchased!
             a(href=product.downloadURL) Download Here
