@@ -38,6 +38,25 @@ var productSchema = new Schema({
   updated_at: Date
 });
 
+var handleStripeError = function(error) {
+  switch(error.type) {
+    case 'StripeCardError':
+      return error;
+    case 'RateLimitError':
+      return new Error('Unfortunately, too many other users are trying to make a purchase at this time. Please try your purchase again in a few moments.');
+    case 'StripeInvalidRequestError':
+      return new Error('Unfortunately, there is a problem processing your payment. We\'re aware of the problem, and will followup with you shortly once we can process your order!');
+    case 'StripeAPIError':
+      return new Error('Unfortunately, our payment processor is down at the moment. Please try your order again in a few moments.');
+    case 'StripeConnectionError':
+      return new Error('Unfortunately, our payment processor is down at the moment. Please try your order again in a few moments.');
+    case 'StripeAuthenticationError':
+      return new Error('Unfortunately, there is a problem processing your payment. We\'re aware of the problem, and will followup with you shortly once we can process your order!');
+  default:
+    return null;
+  }
+};
+
 productSchema.methods.purchase = function(token, user_id, cb) {
   var self = this;
   stripe.charges.create({
@@ -45,8 +64,8 @@ productSchema.methods.purchase = function(token, user_id, cb) {
     currency: this.currency,
     amount: this.amount,
 	description: this.description
-  }, function(err, charge) {
-    if (err) { return cb(err); }
+  }, function(err, response) {
+    if (err) { return cb(handleStripeError(err); }
     var charge = new Charge({
       stripe_token: token,
       product: self._id,
